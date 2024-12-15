@@ -32,7 +32,8 @@ builder.Services.AddHttpClient("Mailgun", client =>
     client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", base64Auth);
 });
 
-builder.Services.AddTransient<IEmailSender, EmailService>();
+// Register the email service in the DI container
+builder.Services.AddTransient<IEmailSender, EmailSenderService>();
 
 var app = builder.Build();
 
