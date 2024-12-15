@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 
 namespace Coltium_Test.Services;
 
-public class EmailService(IHttpClientFactory httpClientFactory, IConfiguration config, ILogger<EmailService> logger)
+public class EmailSenderService(IHttpClientFactory httpClientFactory, IConfiguration config, ILogger<EmailSenderService> logger)
     : IEmailSender
 {
     private readonly HttpClient _httpClient = httpClientFactory.CreateClient("Mailgun");
