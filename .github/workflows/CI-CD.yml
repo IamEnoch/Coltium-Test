@@ -20,7 +20,7 @@ env:
   MAILGUN_API_KEY: ${{ secrets.MAILGUN_API_KEY }}
   MAILGUN_DOMAIN: ${{ secrets.MAILGUN_DOMAIN }}
   COMMUNICATION_SERVICES_CONNECTION_STRING: ${{ secrets.COMMUNICATION_SERVICES_CONNECTION_STRING }}
-  COMMUNICATION_SERVICES_SENDER: ${{ secrets.COMMUNICATION_SERVICES_SENDER }}
+  SENDER_EMAIL: ${{ secrets.SENDER_EMAIL }}
   RESOURCE_GROUP_NAME: 'coltium-rg'
 
 jobs:
@@ -80,5 +80,5 @@ jobs:
 
       - name: Set environment variables
         run: |
-          az webapp config appsettings set --name ${{ env.APP_NAME }} --resource-group ${{ env.RESOURCE_GROUP_NAME }} --settings Mailgun__ApiKey=${{ env.MAILGUN_API_KEY }} Mailgun__Domain=${{ env.MAILGUN_DOMAIN }} Commservices__ConnectionString=${{ env.COMMUNICATION_SERVICES_CONNECTION_STRING }} Commservices__Sender=${{ env.COMMUNICATION_SERVICES_SENDER }}
+          az webapp config appsettings set --name ${{ env.APP_NAME }} --resource-group ${{ env.RESOURCE_GROUP_NAME }} --settings Mailgun__ApiKey=${{ env.MAILGUN_API_KEY }} Mailgun__Domain=${{ env.MAILGUN_DOMAIN }} Commservices__ConnectionString=${{ env.COMMUNICATION_SERVICES_CONNECTION_STRING }} SenderEmail=${{ env.SENDER_EMAIL }}
           az webapp config appsettings list --name ${{ env.APP_NAME }} --resource-group ${{ env.RESOURCE_GROUP_NAME }}

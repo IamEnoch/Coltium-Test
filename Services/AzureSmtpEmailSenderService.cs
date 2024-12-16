@@ -13,7 +13,7 @@ public class AzureSmtpEmailSenderService(
     public async Task SendEmailAsync(string toEmail, string subject, string message)
     {
         var connectionString = config["Commservices:ConnectionString"];
-        var sender = config["Commservices:Sender"];
+        var sender = config["SenderEmail"];
 
         if (string.IsNullOrEmpty(connectionString) || string.IsNullOrEmpty(sender))
         {
