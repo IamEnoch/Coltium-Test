@@ -80,4 +80,4 @@ jobs:
 
       - name: Set environment variables
         run: |
-          az webapp config appsettings set --name ${{ env.APP_NAME }} --resource-group ${{ env.RESOURCE_GROUP_NAME }} --settings Mailgun:ApiKey=${{ secrets.MAILGUN_API_KEY }} Mailgun:Domain=${{ secrets.MAILGUN_DOMAIN }} CommunicationServices:ConnectionString=${{ secrets.COMMUNICATION_SERVICES_CONNECTION_STRING }} CommunicationServices:Sender=${{ secrets.COMMUNICATION_SERVICES_SENDER }}
+          az webapp config appsettings set --name ${{ env.APP_NAME }} --resource-group ${{ env.RESOURCE_GROUP_NAME }} --settings Mailgun__ApiKey=${{ secrets.MAILGUN_API_KEY }} Mailgun__Domain=${{ secrets.MAILGUN_DOMAIN }} CommunicationServices__ConnectionString=${{ secrets.COMMUNICATION_SERVICES_CONNECTION_STRING }} CommunicationServices__Sender=${{ secrets.COMMUNICATION_SERVICES_SENDER }}
