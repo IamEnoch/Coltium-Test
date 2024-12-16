@@ -3,7 +3,10 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 
 namespace Coltium_Test.Services;
 
-public class EmailSenderService(IHttpClientFactory httpClientFactory, IConfiguration config, ILogger<EmailSenderService> logger)
+public class MailGunEmailSenderService(
+    IHttpClientFactory httpClientFactory,
+    IConfiguration config,
+    ILogger<MailGunEmailSenderService> logger)
     : IEmailSender
 {
     private readonly HttpClient _httpClient = httpClientFactory.CreateClient("Mailgun");
@@ -27,6 +30,7 @@ public class EmailSenderService(IHttpClientFactory httpClientFactory, IConfigura
         {
             _logger.LogInformation($"Email to {toEmail} queued successfully!");
         }
+
 
         else
         {
