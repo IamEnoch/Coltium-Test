@@ -6,12 +6,12 @@ using Microsoft.Extensions.Logging;
 
 namespace Coltium_Test.Services
 {
-    public class EmailSenderService : IEmailSender
+    public class MailgunEmailSenderService : IEmailSender
     {
         private readonly IConfiguration _config;
-        private readonly ILogger<EmailSenderService> _logger;
+        private readonly ILogger<MailgunEmailSenderService> _logger;
 
-        public EmailSenderService(IConfiguration config, ILogger<EmailSenderService> logger)
+        public MailgunEmailSenderService(IConfiguration config, ILogger<MailgunEmailSenderService> logger)
         {
             _config = config;
             _logger = logger;
