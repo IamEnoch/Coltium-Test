@@ -81,4 +81,4 @@ jobs:
       - name: Set environment variables
         run: |
           az webapp config appsettings set --name ${{ env.APP_NAME }} --resource-group ${{ env.RESOURCE_GROUP_NAME }} --settings Mailgun__ApiKey=${{ env.MAILGUN_API_KEY }} Mailgun__Domain=${{ env.MAILGUN_DOMAIN }} Commservices__ConnectionString=${{ env.COMMUNICATION_SERVICES_CONNECTION_STRING }} SenderEmail=${{ env.SENDER_EMAIL }}
-          az webapp config appsettings list --name ${{ env.APP_NAME }} --resource-group ${{ env.RESOURCE_GROUP_NAME }}
+          az webapp config appsettings set --name ${{ env.APP_NAME }} --resource-group ${{ env.RESOURCE_GROUP_NAME }} --settings SenderEmail=${{ env.SENDER_EMAIL }}
