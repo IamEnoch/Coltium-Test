@@ -22,10 +22,10 @@ builder.Services.AddControllersWithViews();
 // Set up your named HttpClient for easy reuse
 builder.Services.AddHttpClient("Mailgun", client =>
 {
-    // Grab values from the configuration
-    var apiKey = builder.Configuration.GetValue<string>("Mailgun:ApiKey");
+    // Grab values from the environment variables
+    var apiKey = Environment.GetEnvironmentVariable("MAILGUN_API_KEY");
     var base64Auth = Convert.ToBase64String(Encoding.ASCII.GetBytes($"api:{apiKey}"));
-    var domain = builder.Configuration.GetValue<string>("Mailgun:Domain");
+    var domain = Environment.GetEnvironmentVariable("MAILGUN_DOMAIN");
 
     // Set default values on the HttpClient
     client.BaseAddress = new Uri($"https://api.mailgun.net/v3/{domain}/messages");
