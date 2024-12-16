@@ -12,19 +12,8 @@ public class AzureSmtpEmailSenderService(
 {
     public async Task SendEmailAsync(string toEmail, string subject, string message)
     {
-        string? connectionString;
-        string? sender;
-
-        if (env.IsDevelopment())
-        {
-            connectionString = config["CommunicationServices:ConnectionString"];
-            sender = config["CommunicationServices:Sender"];
-        }
-        else
-        {
-            connectionString = Environment.GetEnvironmentVariable("COMMUNICATION_SERVICES_CONNECTION_STRING");
-            sender = Environment.GetEnvironmentVariable("COMMUNICATION_SERVICES_SENDER");
-        }
+        var connectionString = config["CommunicationServices:ConnectionString"];
+        var sender = config["CommunicationServices:Sender"];
 
         if (string.IsNullOrEmpty(connectionString) || string.IsNullOrEmpty(sender))
         {

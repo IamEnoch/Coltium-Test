@@ -1,52 +1,49 @@
-using System.Net;
-using System.Net.Mail;
+using System.Text;
 using Microsoft.AspNetCore.Identity.UI.Services;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 
-namespace Coltium_Test.Services
+namespace Coltium_Test.Services;
+
+public class MailGunEmailSenderService(
+    IHttpClientFactory httpClientFactory,
+    IConfiguration config,
+    ILogger<MailGunEmailSenderService> logger)
+    : IEmailSender
 {
-    public class MailgunEmailSenderService : IEmailSender
-    {
-        private readonly IConfiguration _config;
-        private readonly ILogger<MailgunEmailSenderService> _logger;
+    private readonly HttpClient _httpClient = httpClientFactory.CreateClient("Mailgun");
+    private readonly ILogger _logger = logger;
 
-        public MailgunEmailSenderService(IConfiguration config, ILogger<MailgunEmailSenderService> logger)
+    public async Task SendEmailAsync(string toEmail, string subject, string message)
+    {
+        if (string.IsNullOrEmpty(config["Mailgun:Domain"])) throw new Exception("Mailgun domain is not configured.");
+
+        using var form = new MultipartFormDataContent();
+
+        SetFormParam("from", $"Your Name <postmaster@{config["Mailgun:Domain"]}>");
+        SetFormParam("to", toEmail);
+        SetFormParam("subject", subject);
+        SetFormParam("text", message);
+        SetFormParam("html", $"<html><body><p>{message}</p></body></html>");
+
+        var result = await _httpClient.PostAsync(string.Empty, form);
+
+        if (result.IsSuccessStatusCode)
         {
-            _config = config;
-            _logger = logger;
+            _logger.LogInformation($"Email to {toEmail} queued successfully!");
         }
 
-        public async Task SendEmailAsync(string toEmail, string subject, string message)
+
+        else
         {
-            var smtpAuthUsername = Environment.GetEnvironmentVariable("AZURE_COMMUNICATION_USERNAME");
-            var smtpAuthPassword = Environment.GetEnvironmentVariable("AZURE_COMMUNICATION_PASSWORD");
-            var sender = Environment.GetEnvironmentVariable("AZURE_COMMUNICATION_SENDER");
-            var smtpHostUrl = "smtp.azurecomm.net";
+            var errorContent = await result.Content.ReadAsStringAsync();
+            _logger.LogError($"Failed to send email to {toEmail}: {errorContent}");
+        }
 
-            if (string.IsNullOrEmpty(smtpAuthUsername) || string.IsNullOrEmpty(smtpAuthPassword) || string.IsNullOrEmpty(sender))
-            {
-                throw new Exception("SMTP credentials are not configured properly.");
-            }
+        return;
 
-            var client = new SmtpClient(smtpHostUrl)
-            {
-                Port = 587,
-                Credentials = new NetworkCredential(smtpAuthUsername, smtpAuthPassword),
-                EnableSsl = true
-            };
-
-            var mailMessage = new MailMessage(sender, toEmail, subject, message);
-
-            try
-            {
-                await client.SendMailAsync(mailMessage);
-                _logger.LogInformation($"The email to {toEmail} was successfully sent using Smtp.");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Smtp send failed with the exception: {ex.Message}.");
-            }
+        // Function to set form parameters for Mailgun
+        void SetFormParam(string key, string value)
+        {
+            form.Add(new StringContent(value, Encoding.UTF8, "text/plain"), key);
         }
     }
 }
