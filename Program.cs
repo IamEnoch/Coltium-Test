@@ -1,10 +1,10 @@
 using System.Net.Http.Headers;
 using System.Text;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using Coltium_Test.Data;
 using Coltium_Test.Services;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,13 +28,8 @@ builder.Services.AddHttpClient("Mailgun", (serviceProvider, client) =>
     var configuration = serviceProvider.GetRequiredService<IConfiguration>();
 
     // Retrieve Mailgun configuration based on environment
-    var apiKey = environment.IsDevelopment()
-        ? configuration["Mailgun:ApiKey"]
-        : Environment.GetEnvironmentVariable("MAILGUN_API_KEY");
-
-    var domain = environment.IsDevelopment()
-        ? configuration["Mailgun:Domain"]
-        : Environment.GetEnvironmentVariable("MAILGUN_DOMAIN");
+    var apiKey = configuration["Mailgun:ApiKey"];
+    var domain = configuration["Mailgun:Domain"];
 
     // Log warnings if required variables are missing
     if (string.IsNullOrWhiteSpace(apiKey) || string.IsNullOrWhiteSpace(domain))
@@ -73,8 +68,8 @@ app.UseRouting();
 app.UseAuthorization();
 
 app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+    "default",
+    "{controller=Home}/{action=Index}/{id?}");
 app.MapRazorPages();
 
 app.Run();
