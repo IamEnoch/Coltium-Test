@@ -1,0 +1,81 @@
+name: CI/CD Pipeline
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  ACR_LOGIN_SERVER: ${{ secrets.ACR_LOGIN_SERVER }}
+  ACR_USERNAME: ${{ secrets.ACR_USERNAME }}
+  ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
+  AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+  AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+  AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+  APP_NAME: 'coltium-test'
+  MAILGUN_API_KEY: ${{ secrets.MAILGUN_API_KEY }}
+  MAILGUN_DOMAIN: ${{ secrets.MAILGUN_DOMAIN }}
+  RESOURCE_GROUP_NAME: 'coltium-rg'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v2
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Build and publish
+        run: |
+          dotnet restore
+          dotnet publish -c Release -o out
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Log in to Azure Container Registry
+        uses: azure/docker-login@v1
+        with:
+          login-server: ${{ env.ACR_LOGIN_SERVER }}
+          username: ${{ env.ACR_USERNAME }}
+          password: ${{ env.ACR_PASSWORD }}
+
+      - name: Build and push Docker image
+        run: |
+          docker build -t ${{ env.ACR_LOGIN_SERVER }}/coltium-test:latest .
+          docker push ${{ env.ACR_LOGIN_SERVER }}/coltium-test:latest
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ env.AZURE_CLIENT_ID }}
+          tenant-id: ${{ env.AZURE_TENANT_ID }}
+          subscription-id: ${{ env.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: ${{ env.APP_NAME }}
+          slot-name: 'production'
+          images: '${{ env.ACR_LOGIN_SERVER }}/coltium-test:latest'
+
+      - name: Set environment variables
+        run: |
+          az webapp config appsettings set --name ${{ env.APP_NAME }} --resource-group ${{ env.RESOURCE_GROUP_NAME }} --settings MAILGUN_API_KEY=${{ secrets.MAILGUN_API_KEY }} MAILGUN_DOMAIN=${{ secrets.MAILGUN_DOMAIN }}

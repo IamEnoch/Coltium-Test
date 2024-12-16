@@ -10,7 +10,7 @@
 
     <ItemGroup>
         <None Update="app.db" CopyToOutputDirectory="PreserveNewest" ExcludeFromSingleFile="true"/>
-        <None Include=".github\Workflows\CI-CD.yml" />
+        <None Include=".github\workflows\CI-CD.yml" />
     </ItemGroup>
 
     <ItemGroup>
