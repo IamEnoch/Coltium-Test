@@ -1,10 +1,10 @@
 using System.Net.Http.Headers;
 using System.Text;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using Coltium_Test.Data;
 using Coltium_Test.Services;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,20 +20,31 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.Requ
 builder.Services.AddControllersWithViews();
 
 // Set up your named HttpClient for easy reuse
-builder.Services.AddHttpClient("Mailgun", client =>
+builder.Services.AddHttpClient("Mailgun", (serviceProvider, client) =>
 {
-    // Grab values from the configuration
-    var apiKey = builder.Configuration.GetValue<string>("Mailgun:ApiKey");
-    var base64Auth = Convert.ToBase64String(Encoding.ASCII.GetBytes($"api:{apiKey}"));
-    var domain = builder.Configuration.GetValue<string>("Mailgun:Domain");
+    // Resolve dependencies
+    var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
+    var environment = serviceProvider.GetRequiredService<IHostEnvironment>();
+    var configuration = serviceProvider.GetRequiredService<IConfiguration>();
 
-    // Set default values on the HttpClient
+    // Retrieve Mailgun configuration based on environment
+    var apiKey = configuration["Mailgun:ApiKey"];
+    var domain = configuration["Mailgun:Domain"];
+
+    // Log warnings if required variables are missing
+    if (string.IsNullOrWhiteSpace(apiKey) || string.IsNullOrWhiteSpace(domain))
+        logger.LogWarning("Mailgun API key or domain is not set. Ensure these values are configured properly.");
+
+    // Set default HttpClient configuration
     client.BaseAddress = new Uri($"https://api.mailgun.net/v3/{domain}/messages");
-    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", base64Auth);
+    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
+        "Basic",
+        Convert.ToBase64String(Encoding.ASCII.GetBytes($"api:{apiKey}"))
+    );
 });
 
 // Register the email service in the DI container
-builder.Services.AddTransient<IEmailSender, EmailSenderService>();
+builder.Services.AddTransient<IEmailSender, AzureSmtpEmailSenderService>();
 
 var app = builder.Build();
 
@@ -57,8 +68,8 @@ app.UseRouting();
 app.UseAuthorization();
 
 app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+    "default",
+    "{controller=Home}/{action=Index}/{id?}");
 app.MapRazorPages();
 
 app.Run();
